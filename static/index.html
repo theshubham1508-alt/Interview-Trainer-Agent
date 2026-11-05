@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interview Trainer Agent — Powered by IBM Granite</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ibm-blue: #0f62fe;
+      --ibm-blue-dark: #0043ce;
+      --ibm-cool-gray-10: #f4f4f4;
+      --ibm-cool-gray-20: #e0e0e0;
+      --ibm-cool-gray-60: #6f6f6f;
+      --ibm-cool-gray-90: #262626;
+      --ibm-green: #24a148;
+      --ibm-red: #da1e28;
+      --ibm-purple: #8a3ffc;
+      --ibm-teal: #009d9a;
+      --white: #ffffff;
+      --surface: #f4f4f4;
+      --card-bg: #ffffff;
+      --border: #e0e0e0;
+      --text-primary: #161616;
+      --text-secondary: #525252;
+      --font: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --radius: 8px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--surface);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Header ──────────────────────────────────────────────────────────── */
+    .header {
+      background: var(--ibm-cool-gray-90);
+      color: var(--white);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 3px solid var(--ibm-blue);
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .header-brand .logo {
+      width: 32px;
+      height: 32px;
+      background: var(--ibm-blue);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+    .header-badge {
+      background: var(--ibm-blue);
+      color: var(--white);
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--ibm-green);
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── Layout ──────────────────────────────────────────────────────────── */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: calc(100vh - 56px);
+    }
+
+    /* ── Sidebar ─────────────────────────────────────────────────────────── */
+    .sidebar {
+      background: var(--card-bg);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      overflow-y: auto;
+    }
+    .sidebar-section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ibm-cool-gray-60);
+      margin-bottom: 0.75rem;
+    }
+    .form-group { margin-bottom: 1rem; }
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.35rem;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font);
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      background: var(--white);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--ibm-blue);
+      box-shadow: 0 0 0 2px rgba(15, 98, 254, 0.15);
+    }
+    .form-textarea { resize: vertical; min-height: 100px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0.6rem 1.2rem;
+      border-radius: 4px;
+      font-family: var(--font);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      outline: none;
+    }
+    .btn-primary {
+      background: var(--ibm-blue);
+      color: var(--white);
+      width: 100%;
+    }
+    .btn-primary:hover { background: var(--ibm-blue-dark); }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { background: var(--ibm-cool-gray-20); color: var(--ibm-cool-gray-60); cursor: not-allowed; }
+    .btn-outline {
+      background: transparent;
+      color: var(--ibm-blue);
+      border: 1.5px solid var(--ibm-blue);
+      width: 100%;
+    }
+    .btn-outline:hover { background: rgba(15, 98, 254, 0.06); }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; width: auto; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 0.5rem 0; }
+
+    /* ── Nav tabs ────────────────────────────────────────────────────────── */
+    .nav-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.6rem 0.75rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+      border: none;
+      background: transparent;
+      text-align: left;
+    }
+    .nav-tab:hover { background: var(--surface); color: var(--text-primary); }
+    .nav-tab.active {
+      background: rgba(15, 98, 254, 0.1);
+      color: var(--ibm-blue);
+      font-weight: 600;
+    }
+    .nav-tab-icon {
+      width: 20px;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    /* ── Main content ────────────────────────────────────────────────────── */
+    .main-content {
+      padding: 2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ── Panels ──────────────────────────────────────────────────────────── */
+    .panel { display: none; }
+    .panel.active { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    /* ── Cards ───────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── Welcome banner ──────────────────────────────────────────────────── */
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--ibm-cool-gray-90) 0%, #21272a 100%);
+      color: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: none;
+      box-shadow: var(--shadow-lg);
+    }
+    .welcome-banner h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+    .welcome-banner p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.75);
+      max-width: 520px;
+      line-height: 1.7;
+    }
+    .ibm-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--ibm-blue);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+
+    /* ── Feature grid ────────────────────────────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .feature-card:hover {
+      border-color: var(--ibm-blue);
+      box-shadow: 0 0 0 2px rgba(15,98,254,0.12);
+      transform: translateY(-2px);
+    }
+    .feature-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .feature-label { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+    .feature-desc { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+    /* ── Response area ───────────────────────────────────────────────────── */
+    .response-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem;
+      font-size: 0.875rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 100px;
+      color: var(--text-primary);
+    }
+    .response-box.empty {
+      color: var(--text-secondary);
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Markdown-style rendering ────────────────────────────────────────── */
+    .response-rendered h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ibm-blue);
+      margin: 1.25rem 0 0.4rem;
+      padding-bottom: 4px;
+      border-bottom: 2px solid rgba(15,98,254,0.15);
+    }
+    .response-rendered h2:first-child { margin-top: 0; }
+    .response-rendered ul, .response-rendered ol {
+      padding-left: 1.4rem;
+      margin: 0.4rem 0 0.8rem;
+    }
+    .response-rendered li { margin-bottom: 0.3rem; }
+    .response-rendered p { margin-bottom: 0.6rem; }
+    .response-rendered strong { color: var(--ibm-cool-gray-90); }
+
+    /* ── Sources ─────────────────────────────────────────────────────────── */
+    .sources-section { margin-top: 1rem; }
+    .sources-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ibm-cool-gray-60);
+      margin-bottom: 0.5rem;
+    }
+    .source-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin: 3px;
+    }
+
+    /* ── Chat UI ─────────────────────────────────────────────────────────── */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 56px - 4rem);
+      min-height: 400px;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .chat-message {
+      max-width: 80%;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    .chat-message.user {
+      align-self: flex-end;
+      background: var(--ibm-blue);
+      color: var(--white);
+      border-bottom-right-radius: 4px;
+    }
+    .chat-message.assistant {
+      align-self: flex-start;
+      background: var(--card-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+    .chat-message.assistant .sender-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--ibm-blue);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      padding: 0.75rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+    .chat-input {
+      flex: 1;
+      padding: 0.6rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font);
+      font-size: 0.875rem;
+      outline: none;
+      resize: none;
+      min-height: 42px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .chat-input:focus { border-color: var(--ibm-blue); }
+    .chat-send-btn {
+      background: var(--ibm-blue);
+      color: var(--white);
+      border: none;
+      border-radius: 4px;
+      padding: 0 1rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .chat-send-btn:hover { background: var(--ibm-blue-dark); }
+    .chat-send-btn:disabled { background: var(--ibm-cool-gray-20); cursor: not-allowed; }
+    .chat-welcome {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      padding: 2rem;
+    }
+    .chat-welcome .big-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+    /* ── Loading spinner ─────────────────────────────────────────────────── */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    .spinner.dark {
+      border-color: rgba(0,0,0,0.15);
+      border-top-color: var(--ibm-blue);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Alert ───────────────────────────────────────────────────────────── */
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .alert-error { background: #fff1f1; border-left: 3px solid var(--ibm-red); color: #5a1010; }
+    .alert-success { background: #defbe6; border-left: 3px solid var(--ibm-green); color: #044317; }
+    .alert-info { background: #edf5ff; border-left: 3px solid var(--ibm-blue); color: #001d6c; }
+
+    /* ── Upload zone ─────────────────────────────────────────────────────── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--ibm-blue);
+      background: rgba(15,98,254,0.04);
+      color: var(--ibm-blue);
+    }
+    .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+    /* ── Tag badges ──────────────────────────────────────────────────────── */
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .tag-blue { background: #edf5ff; color: var(--ibm-blue); }
+    .tag-purple { background: #f6f2ff; color: var(--ibm-purple); }
+    .tag-green { background: #defbe6; color: #044317; }
+    .tag-teal { background: #d9fbfb; color: #005d5d; }
+
+    /* ── Responsive ──────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .app-layout { grid-template-columns: 1fr; }
+      .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+      .chat-container { height: auto; min-height: 500px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ───────────────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-brand">
+    <div class="logo">ITA</div>
+    <span>Interview Trainer Agent</span>
+    <span class="header-badge">IBM Granite</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:rgba(255,255,255,0.7);">
+    <span class="status-dot"></span>Powered by watsonx.ai
+  </div>
+</header>
+
+<!-- ── App Layout ────────────────────────────────────────────────────────────── -->
+<div class="app-layout">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div>
+      <div class="sidebar-section-title">👤 Your Profile</div>
+      <div class="form-group">
+        <label class="form-label" for="inp-name">Full Name</label>
+        <input type="text" id="inp-name" class="form-input" placeholder="e.g. Sarah Johnson" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="inp-role">Target Role</label>
+        <input type="text" id="inp-role" class="form-input" placeholder="e.g. Senior Software Engineer" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="inp-level">Experience Level</label>
+        <select id="inp-level" class="form-select">
+          <option value="">— Select Level —</option>
+          <option value="Fresher">Fresher (0–1 yr)</option>
+          <option value="Junior">Junior (1–3 yrs)</option>
+          <option value="Mid-Level">Mid-Level (3–6 yrs)</option>
+          <option value="Senior">Senior (6–10 yrs)</option>
+          <option value="Lead">Lead / Principal (10+ yrs)</option>
+        </select>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div>
+      <div class="sidebar-section-title">🧭 Navigation</div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchPanel('home')" id="tab-home">
+          <span class="nav-tab-icon">🏠</span> Home
+        </button>
+        <button class="nav-tab" onclick="switchPanel('questions')" id="tab-questions">
+          <span class="nav-tab-icon">❓</span> Question Set
+        </button>
+        <button class="nav-tab" onclick="switchPanel('answer')" id="tab-answer">
+          <span class="nav-tab-icon">💡</span> Model Answer
+        </button>
+        <button class="nav-tab" onclick="switchPanel('resume')" id="tab-resume">
+          <span class="nav-tab-icon">📄</span> Resume Analysis
+        </button>
+        <button class="nav-tab" onclick="switchPanel('chat')" id="tab-chat">
+          <span class="nav-tab-icon">💬</span> Chat Coach
+        </button>
+        <button class="nav-tab" onclick="switchPanel('upload')" id="tab-upload">
+          <span class="nav-tab-icon">📚</span> Knowledge Base
+        </button>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div style="font-size:0.75rem;color:var(--ibm-cool-gray-60);line-height:1.6;">
+      <strong style="color:var(--text-secondary);">IBM Granite</strong> · ibm/granite-13b-chat-v2<br>
+      RAG via ChromaDB + LangChain<br>
+      FastAPI Backend
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- ── Home ─────────────────────────────────────────────────────────────── -->
+    <div id="panel-home" class="panel active">
+      <div class="welcome-banner">
+        <h1>Interview Trainer Agent</h1>
+        <p>AI-powered interview preparation using IBM Granite and Retrieval-Augmented Generation. Get tailored questions, model answers, resume analysis, and coaching for any role and experience level.</p>
+        <div class="ibm-tag">⚡ IBM watsonx.ai · IBM Granite · RAG</div>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card" onclick="switchPanel('questions')">
+          <div class="feature-icon">❓</div>
+          <div class="feature-label">Question Set</div>
+          <div class="feature-desc">Technical, behavioral &amp; HR questions tailored to your role</div>
+        </div>
+        <div class="feature-card" onclick="switchPanel('answer')">
+          <div class="feature-icon">💡</div>
+          <div class="feature-label">Model Answer</div>
+          <div class="feature-desc">Expert answers with key points, mistakes to avoid &amp; tips</div>
+        </div>
+        <div class="feature-card" onclick="switchPanel('resume')">
+          <div class="feature-icon">📄</div>
+          <div class="feature-label">Resume Analysis</div>
+          <div class="feature-desc">Strengths, skill gaps, predicted questions &amp; 30-day plan</div>
+        </div>
+        <div class="feature-card" onclick="switchPanel('chat')">
+          <div class="feature-icon">💬</div>
+          <div class="feature-label">Chat Coach</div>
+          <div class="feature-desc">Ask anything about interview prep in a live conversation</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🚀 How to Get Started</div>
+        <ol style="padding-left:1.4rem;font-size:0.875rem;line-height:2;">
+          <li>Fill in your <strong>Name</strong>, <strong>Target Role</strong>, and <strong>Experience Level</strong> in the sidebar</li>
+          <li>Choose a feature from the navigation menu</li>
+          <li>IBM Granite will generate personalized interview content using RAG</li>
+          <li>Use the Chat Coach for any follow-up questions</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ── Question Set ──────────────────────────────────────────────────────── -->
+    <div id="panel-questions" class="panel">
+      <div class="card">
+        <div class="card-title">❓ Generate Interview Question Set</div>
+        <div class="card-subtitle">IBM Granite generates technical, behavioral &amp; HR questions tailored to your profile using RAG</div>
+        <div class="form-group">
+          <label class="form-label">Background / Brief Summary (optional)</label>
+          <textarea id="q-background" class="form-textarea" placeholder="e.g. 4 years of Python development, built REST APIs, led a team of 3 engineers, worked on fintech products..."></textarea>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+          <span id="q-profile-tag" class="tag tag-blue">Set your profile →</span>
+        </div>
+        <button class="btn btn-primary" id="btn-generate-q" onclick="generateQuestions()">
+          <span id="btn-generate-q-text">⚡ Generate Questions with IBM Granite</span>
+        </button>
+      </div>
+      <div id="q-result" style="display:none;" class="card">
+        <div class="card-title">📋 Your Personalized Question Set</div>
+        <div id="q-response" class="response-box response-rendered"></div>
+        <div id="q-sources" class="sources-section"></div>
+      </div>
+      <div id="q-alert" style="display:none;"></div>
+    </div>
+
+    <!-- ── Model Answer ──────────────────────────────────────────────────────── -->
+    <div id="panel-answer" class="panel">
+      <div class="card">
+        <div class="card-title">💡 Get a Model Answer</div>
+        <div class="card-subtitle">Paste any interview question to get a model answer, talking points &amp; improvement tips</div>
+        <div class="form-group">
+          <label class="form-label">Interview Question</label>
+          <textarea id="a-question" class="form-textarea" rows="3" placeholder="e.g. How do you handle disagreements with your manager? / Explain the CAP theorem."></textarea>
+        </div>
+        <button class="btn btn-primary" id="btn-answer" onclick="getModelAnswer()">
+          <span id="btn-answer-text">💡 Get Model Answer</span>
+        </button>
+      </div>
+      <div id="a-result" style="display:none;" class="card">
+        <div class="card-title">🎯 Model Answer</div>
+        <div id="a-response" class="response-box response-rendered"></div>
+        <div id="a-sources" class="sources-section"></div>
+      </div>
+      <div id="a-alert" style="display:none;"></div>
+    </div>
+
+    <!-- ── Resume Analysis ───────────────────────────────────────────────────── -->
+    <div id="panel-resume" class="panel">
+      <div class="card">
+        <div class="card-title">📄 Resume / Background Analysis</div>
+        <div class="card-subtitle">Paste your resume or background. Get strengths, skill gaps, predicted questions &amp; a 30-day prep plan</div>
+        <div class="form-group">
+          <label class="form-label">Resume Text or Professional Background</label>
+          <textarea id="r-resume" class="form-textarea" rows="8" placeholder="Paste your resume content here, or describe your professional background in detail...
+
+Example:
+Jane Doe – Software Engineer
+5 years experience in Java and Spring Boot.
+Built microservices handling 1M+ requests/day.
+Led team of 4 engineers on payment platform.
+Skills: Java, Spring Boot, Kubernetes, PostgreSQL, CI/CD..."></textarea>
+        </div>
+        <button class="btn btn-primary" id="btn-resume" onclick="analyzeResume()">
+          <span id="btn-resume-text">📊 Analyze with IBM Granite</span>
+        </button>
+      </div>
+      <div id="r-result" style="display:none;" class="card">
+        <div class="card-title">🔍 Interview Readiness Report</div>
+        <div id="r-response" class="response-box response-rendered"></div>
+        <div id="r-sources" class="sources-section"></div>
+      </div>
+      <div id="r-alert" style="display:none;"></div>
+    </div>
+
+    <!-- ── Chat Coach ────────────────────────────────────────────────────────── -->
+    <div id="panel-chat" class="panel">
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+          <div class="card-title" style="margin-bottom:0;">💬 Interview Coach Chat</div>
+          <button class="btn btn-outline btn-sm" onclick="clearChat()" style="margin-left:auto;">🗑 Clear</button>
+        </div>
+        <div class="chat-container">
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-welcome">
+              <div class="big-icon">🤖</div>
+              <strong>Your IBM Granite Interview Coach is ready!</strong><br>
+              Set your profile in the sidebar, then ask anything about interview preparation.
+            </div>
+          </div>
+          <div class="chat-input-row">
+            <textarea
+              class="chat-input"
+              id="chat-input"
+              placeholder="Ask anything: 'How do I answer salary questions?', 'Mock Q: Tell me about yourself'..."
+              rows="1"
+              onkeydown="chatKeydown(event)"
+            ></textarea>
+            <button class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Knowledge Base Upload ─────────────────────────────────────────────── -->
+    <div id="panel-upload" class="panel">
+      <div class="card">
+        <div class="card-title">📚 Knowledge Base Management</div>
+        <div class="card-subtitle">Upload PDF, TXT, or JSON files to expand the RAG knowledge base with company-specific or role-specific interview content</div>
+
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="handleFileDrop(event)">
+          <div class="upload-icon">📁</div>
+          <strong>Click to upload or drag &amp; drop</strong>
+          <div style="margin-top:4px;font-size:0.8rem;">Supported: PDF, TXT, JSON</div>
+        </div>
+        <input type="file" id="file-input" style="display:none" accept=".pdf,.txt,.json" onchange="uploadFile(this.files[0])" />
+
+        <div id="upload-alert" style="display:none;margin-top:1rem;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔄 Rebuild Index</div>
+        <div class="card-subtitle">Re-ingest all documents in the knowledge base and rebuild the vector store index</div>
+        <button class="btn btn-outline" id="btn-rebuild" onclick="rebuildIndex()" style="width:auto;">
+          <span id="btn-rebuild-text">🔄 Rebuild Vector Store</span>
+        </button>
+        <div id="rebuild-alert" style="display:none;margin-top:1rem;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">ℹ️ Knowledge Base Sources</div>
+        <div style="font-size:0.875rem;line-height:1.8;color:var(--text-secondary);">
+          The RAG pipeline currently indexes:<br>
+          <span class="tag tag-blue">interview_qa_seed.json</span>
+          <span class="tag tag-green">interview_preparation_guide.txt</span>
+          <span class="tag tag-purple">Your uploaded documents</span><br><br>
+          IBM Granite retrieves the most relevant context from these sources before generating responses, ensuring accurate and role-specific guidance.
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  const API = '/api/v1';
+  let chatHistory = [];
+
+  // ── Panel switching ────────────────────────────────────────────────────────
+  function switchPanel(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+    updateProfileTag();
+  }
+
+  // ── Profile helpers ────────────────────────────────────────────────────────
+  function getProfile() {
+    return {
+      name: document.getElementById('inp-name').value.trim(),
+      role: document.getElementById('inp-role').value.trim(),
+      experience_level: document.getElementById('inp-level').value,
+    };
+  }
+
+  function validateProfile() {
+    const p = getProfile();
+    if (!p.name) return 'Please enter your name in the sidebar.';
+    if (!p.role) return 'Please enter your target role in the sidebar.';
+    if (!p.experience_level) return 'Please select your experience level in the sidebar.';
+    return null;
+  }
+
+  function updateProfileTag() {
+    const p = getProfile();
+    const el = document.getElementById('q-profile-tag');
+    if (!el) return;
+    if (p.name && p.role && p.experience_level) {
+      el.textContent = `${p.name} · ${p.role} · ${p.experience_level}`;
+      el.className = 'tag tag-green';
+    } else {
+      el.textContent = 'Set your profile in the sidebar →';
+      el.className = 'tag tag-blue';
+    }
+  }
+
+  ['inp-name','inp-role','inp-level'].forEach(id =>
+    document.getElementById(id).addEventListener('change', updateProfileTag)
+  );
+
+  // ── UI utilities ───────────────────────────────────────────────────────────
+  function showAlert(containerId, type, message) {
+    const el = document.getElementById(containerId);
+    el.style.display = 'block';
+    el.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+  }
+
+  function hideAlert(containerId) {
+    const el = document.getElementById(containerId);
+    if (el) { el.style.display = 'none'; el.innerHTML = ''; }
+  }
+
+  function setLoading(btnId, textId, isLoading, defaultText) {
+    const btn = document.getElementById(btnId);
+    const txt = document.getElementById(textId);
+    btn.disabled = isLoading;
+    txt.innerHTML = isLoading
+      ? `<span class="spinner"></span> Generating with IBM Granite…`
+      : defaultText;
+  }
+
+  // Simple markdown-to-HTML (headers + bullets only, safe)
+  function renderMarkdown(text) {
+    return text
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^### (.+)$/gm, '<h3 style="font-size:.9rem;font-weight:700;margin:.8rem 0 .3rem;color:#262626">$1</h3>')
+      .replace(/^\*\*(.+?)\*\*/gm, '<strong>$1</strong>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
+      .replace(/^[-•] (.+)$/gm, '<li>$2</li>')
+      .replace(/(<li>[\s\S]*?<\/li>)+/g, m => `<ul>${m}</ul>`)
+      .replace(/\n{2,}/g, '</p><p>')
+      .replace(/^(?!<[hul])/gm, '')
+      .replace(/^(.+)$/gm, s => s.startsWith('<') ? s : `<p>${s}</p>`);
+  }
+
+  function renderSources(sources, containerId) {
+    const el = document.getElementById(containerId);
+    if (!sources || sources.length === 0) { el.innerHTML = ''; return; }
+    const chips = sources.map(s =>
+      `<span class="source-chip">📎 ${s.source.split(/[\\/]/).pop()}</span>`
+    ).join('');
+    el.innerHTML = `<div class="sources-title">Sources retrieved by RAG</div>${chips}`;
+  }
+
+  // ── Generate Questions ─────────────────────────────────────────────────────
+  async function generateQuestions() {
+    const err = validateProfile();
+    if (err) { showAlert('q-alert', 'error', err); return; }
+    hideAlert('q-alert');
+    document.getElementById('q-result').style.display = 'none';
+    setLoading('btn-generate-q', 'btn-generate-q-text', true);
+
+    const p = getProfile();
+    const background = document.getElementById('q-background').value.trim();
+
+    try {
+      const resp = await fetch(`${API}/generate-questions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...p, background }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || 'Generation failed');
+
+      document.getElementById('q-result').style.display = 'block';
+      document.getElementById('q-response').innerHTML = renderMarkdown(data.response);
+      renderSources(data.sources, 'q-sources');
+    } catch(e) {
+      showAlert('q-alert', 'error', '❌ ' + e.message);
+    } finally {
+      setLoading('btn-generate-q', 'btn-generate-q-text', false, '⚡ Generate Questions with IBM Granite');
+    }
+  }
+
+  // ── Model Answer ───────────────────────────────────────────────────────────
+  async function getModelAnswer() {
+    const err = validateProfile();
+    if (err) { showAlert('a-alert', 'error', err); return; }
+    const question = document.getElementById('a-question').value.trim();
+    if (!question) { showAlert('a-alert', 'error', 'Please enter an interview question.'); return; }
+    hideAlert('a-alert');
+    document.getElementById('a-result').style.display = 'none';
+    setLoading('btn-answer', 'btn-answer-text', true);
+
+    const p = getProfile();
+    try {
+      const resp = await fetch(`${API}/model-answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...p, question }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || 'Generation failed');
+
+      document.getElementById('a-result').style.display = 'block';
+      document.getElementById('a-response').innerHTML = renderMarkdown(data.response);
+      renderSources(data.sources, 'a-sources');
+    } catch(e) {
+      showAlert('a-alert', 'error', '❌ ' + e.message);
+    } finally {
+      setLoading('btn-answer', 'btn-answer-text', false, '💡 Get Model Answer');
+    }
+  }
+
+  // ── Resume Analysis ────────────────────────────────────────────────────────
+  async function analyzeResume() {
+    const err = validateProfile();
+    if (err) { showAlert('r-alert', 'error', err); return; }
+    const resume_text = document.getElementById('r-resume').value.trim();
+    if (resume_text.length < 50) { showAlert('r-alert', 'error', 'Please provide at least 50 characters of resume/background text.'); return; }
+    hideAlert('r-alert');
+    document.getElementById('r-result').style.display = 'none';
+    setLoading('btn-resume', 'btn-resume-text', true);
+
+    const p = getProfile();
+    try {
+      const resp = await fetch(`${API}/analyze-resume`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...p, resume_text }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || 'Analysis failed');
+
+      document.getElementById('r-result').style.display = 'block';
+      document.getElementById('r-response').innerHTML = renderMarkdown(data.response);
+      renderSources(data.sources, 'r-sources');
+    } catch(e) {
+      showAlert('r-alert', 'error', '❌ ' + e.message);
+    } finally {
+      setLoading('btn-resume', 'btn-resume-text', false, '📊 Analyze with IBM Granite');
+    }
+  }
+
+  // ── Chat Coach ─────────────────────────────────────────────────────────────
+  function chatKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChat();
+    }
+  }
+
+  function clearChat() {
+    chatHistory = [];
+    const msgs = document.getElementById('chat-messages');
+    msgs.innerHTML = `
+      <div class="chat-welcome">
+        <div class="big-icon">🤖</div>
+        <strong>Chat cleared!</strong><br>
+        Ask your next interview question.
+      </div>`;
+  }
+
+  function appendChatMessage(role, content) {
+    const msgs = document.getElementById('chat-messages');
+    // Remove welcome message if present
+    const welcome = msgs.querySelector('.chat-welcome');
+    if (welcome) welcome.remove();
+
+    const div = document.createElement('div');
+    div.className = `chat-message ${role}`;
+    if (role === 'assistant') {
+      div.innerHTML = `<div class="sender-label">🤖 IBM Granite Coach</div>${renderMarkdown(content)}`;
+    } else {
+      div.textContent = content;
+    }
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+  }
+
+  async function sendChat() {
+    const err = validateProfile();
+    if (err) { appendChatMessage('assistant', '⚠️ ' + err); return; }
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    input.value = '';
+    appendChatMessage('user', message);
+
+    const btn = document.getElementById('chat-send-btn');
+    btn.disabled = true;
+    const typingDiv = appendChatMessage('assistant', '⏳ IBM Granite is thinking…');
+
+    const p = getProfile();
+    try {
+      const resp = await fetch(`${API}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...p,
+          message,
+          history: chatHistory,
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || 'Chat failed');
+
+      typingDiv.innerHTML = `<div class="sender-label">🤖 IBM Granite Coach</div>${renderMarkdown(data.response)}`;
+      chatHistory.push({ role: 'user', content: message });
+      chatHistory.push({ role: 'assistant', content: data.response });
+      // Keep last 12 turns
+      if (chatHistory.length > 12) chatHistory = chatHistory.slice(-12);
+    } catch(e) {
+      typingDiv.innerHTML = `<div class="sender-label">🤖 IBM Granite Coach</div>❌ Error: ${e.message}`;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ── File Upload ────────────────────────────────────────────────────────────
+  function handleFileDrop(e) {
+    e.preventDefault();
+    document.getElementById('upload-zone').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) uploadFile(file);
+  }
+
+  async function uploadFile(file) {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    showAlert('upload-alert', 'info', `⏳ Uploading ${file.name}…`);
+    try {
+      const resp = await fetch(`${API}/ingest/upload`, { method: 'POST', body: formData });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || 'Upload failed');
+      showAlert('upload-alert', 'success', `✅ ${data.detail}`);
+    } catch(e) {
+      showAlert('upload-alert', 'error', '❌ ' + e.message);
+    }
+  }
+
+  async function rebuildIndex() {
+    const btn = document.getElementById('btn-rebuild');
+    const txt = document.getElementById('btn-rebuild-text');
+    btn.disabled = true;
+    txt.innerHTML = '<span class="spinner dark"></span> Rebuilding…';
+    hideAlert('rebuild-alert');
+    try {
+      const resp = await fetch(`${API}/ingest/rebuild`, { method: 'POST' });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || 'Rebuild failed');
+      showAlert('rebuild-alert', 'success', `✅ ${data.detail}`);
+    } catch(e) {
+      showAlert('rebuild-alert', 'error', '❌ ' + e.message);
+    } finally {
+      btn.disabled = false;
+      txt.textContent = '🔄 Rebuild Vector Store';
+    }
+  }
+</script>
+</body>
+</html>

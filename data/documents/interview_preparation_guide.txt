@@ -1,0 +1,134 @@
+INTERVIEW PREPARATION GUIDE — INDUSTRY BEST PRACTICES
+=======================================================
+
+SECTION 1: THE STAR METHOD
+----------------------------
+The STAR method is the gold standard for answering behavioral interview questions.
+
+- Situation: Set the scene and context. Be specific about when and where.
+- Task: Describe the challenge or responsibility you faced.
+- Action: Explain EXACTLY what YOU did (use "I", not "we").
+- Result: Share the measurable outcome. Quantify whenever possible.
+
+Example behavioral question: "Tell me about a time you had to meet a tight deadline."
+
+STAR Answer Example:
+Situation: Two weeks before a major product launch, our lead developer left unexpectedly.
+Task: I had to complete the remaining 30% of backend development and ensure launch readiness.
+Action: I reprioritized all non-critical features, worked closely with QA to define a reduced MVP scope, and brought in a contractor for frontend work. I held daily 15-minute standups to track progress.
+Result: We launched on schedule with 95% of planned features. The product achieved 10,000 sign-ups in the first week.
+
+
+SECTION 2: EXPERIENCE LEVEL EXPECTATIONS
+------------------------------------------
+
+FRESHER (0-1 years):
+- Focus: Foundational knowledge, academic projects, internships, learning agility
+- Interviewers expect: Basic CS concepts, enthusiasm, problem-solving approach
+- Key areas: Data structures, algorithms, OOP fundamentals, one technology stack
+
+JUNIOR (1-3 years):
+- Focus: Hands-on coding ability, understanding of software development lifecycle
+- Interviewers expect: Working independently on features, basic system design awareness
+- Key areas: Code quality, debugging, testing, version control (Git), API design
+
+MID-LEVEL (3-6 years):
+- Focus: Ownership of features end-to-end, some technical leadership
+- Interviewers expect: System design basics, mentoring juniors, cross-functional collaboration
+- Key areas: System design, scalability, performance, code reviews, agile practices
+
+SENIOR (6-10 years):
+- Focus: Architecture decisions, leading teams, defining technical strategy
+- Interviewers expect: Ambiguity handling, trade-off analysis, organizational impact
+- Key areas: Distributed systems, leadership, stakeholder management, technical roadmap
+
+LEAD / PRINCIPAL (10+ years):
+- Focus: Org-wide technical vision, hiring decisions, long-term architecture
+- Interviewers expect: Strategic thinking, cross-team alignment, industry-level thinking
+- Key areas: Engineering culture, platform design, build vs. buy decisions, EM collaboration
+
+
+SECTION 3: COMMON INTERVIEW FORMATS
+-------------------------------------
+
+1. PHONE SCREEN (20-30 min)
+   - Goal: Basic qualification check
+   - Typical questions: Background, motivation, 1-2 technical questions
+   - Tip: Have your resume in front of you. Be concise.
+
+2. TECHNICAL CODING ROUND (45-60 min)
+   - Goal: Assess problem-solving and coding skills
+   - Tools: LeetCode-style problems, live coding (CoderPad, HackerRank)
+   - Tip: Think out loud. Clarify constraints before coding. Discuss time/space complexity.
+
+3. SYSTEM DESIGN ROUND (45-60 min)
+   - Goal: Assess architectural thinking (Mid-Level and above)
+   - Topics: URL shortener, rate limiter, social feed, distributed cache
+   - Tip: Use the RESHADED framework: Requirements, Estimation, Storage, High-level design, APIs, Detailed design, Evaluation, Distinguishing features.
+
+4. BEHAVIORAL ROUND (30-45 min)
+   - Goal: Assess culture fit, soft skills, leadership
+   - Tip: Prepare 6-8 STAR stories covering: leadership, failure, conflict, impact, collaboration, growth.
+
+5. CASE STUDY / TAKE-HOME (varies)
+   - Goal: Assess practical skills and judgment
+   - Tip: Document your thought process. Quality > completeness.
+
+
+SECTION 4: SALARY NEGOTIATION
+-------------------------------
+- Always research market rate before negotiating (use Glassdoor, Levels.fyi, LinkedIn Salary)
+- Let the employer make the first offer whenever possible
+- Counter with a specific number, not a range
+- Negotiate total compensation: base salary, equity, signing bonus, PTO
+- Script: "Based on my research and the value I bring to this role, I was expecting something closer to [X]. Is there flexibility to get there?"
+
+
+SECTION 5: QUESTIONS TO ASK THE INTERVIEWER
+---------------------------------------------
+Always ask thoughtful questions — it signals genuine interest.
+
+1. "What does success look like for this role in the first 90 days?"
+2. "What are the biggest technical challenges the team is currently facing?"
+3. "How does engineering collaborate with product and design here?"
+4. "What opportunities are there for professional development and growth?"
+5. "How is performance reviewed, and how are promotions decided?"
+6. "What do you personally enjoy most about working here?"
+
+
+SECTION 6: TECHNICAL ASSESSMENT TIPS
+--------------------------------------
+Coding Interviews:
+- Clarify the problem before writing code
+- Start with a brute-force solution, then optimize
+- Test with edge cases: empty input, single element, max size
+- Communicate your approach throughout
+
+System Design Interviews:
+- Align on functional and non-functional requirements upfront
+- Estimate scale: users, requests per second, storage
+- Start simple, then add complexity (caching, sharding, replication)
+- Discuss trade-offs explicitly
+
+Domain Knowledge:
+- Review fundamentals of your primary programming language
+- Understand the data structures and their time complexities
+- Study common design patterns (Factory, Observer, Strategy, etc.)
+- Know your databases: SQL vs NoSQL, indexing, transactions, ACID
+
+
+SECTION 7: SOFT SKILLS ASSESSMENT
+------------------------------------
+Interviewers assess:
+- Communication: Can you explain complex ideas clearly?
+- Collaboration: Do you work well with others and resolve conflicts?
+- Growth mindset: Do you learn from failures and seek feedback?
+- Ownership: Do you take responsibility for outcomes?
+- Adaptability: Can you navigate change and ambiguity?
+
+Key phrases that signal strong soft skills:
+- "I took ownership of..."
+- "I collaborated with X team to..."
+- "I learned from that failure by..."
+- "I proactively communicated the risk..."
+- "I sought feedback from my manager and implemented..."

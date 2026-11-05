@@ -1,0 +1,93 @@
+[
+  {
+    "role": "Software Engineer",
+    "category": "technical",
+    "question": "Explain the difference between a process and a thread.",
+    "answer": "A process is an independent program in execution with its own memory space, while a thread is a lightweight unit of execution within a process that shares the same memory. Processes are isolated from each other, which provides safety but makes inter-process communication expensive. Threads within the same process share memory and resources, enabling faster communication but requiring careful synchronization to avoid race conditions. In modern applications, multi-threading is used for concurrency while multi-processing is used for parallelism and isolation.",
+    "tips": "Mention real-world use cases like web servers (multi-threading) vs. microservices (multi-processing). Bring up synchronization primitives like mutexes and semaphores to show depth."
+  },
+  {
+    "role": "Software Engineer",
+    "category": "technical",
+    "question": "What is the difference between REST and GraphQL?",
+    "answer": "REST (Representational State Transfer) is an architectural style using fixed endpoints for each resource, typically returning the full resource representation. GraphQL is a query language that allows clients to request exactly the data they need from a single endpoint, reducing over-fetching and under-fetching. REST is simpler and widely cached; GraphQL offers flexibility for complex, nested data needs. REST suits simple CRUD applications; GraphQL excels in data-rich applications with many entity relationships.",
+    "tips": "Mention trade-offs: REST's cacheability vs. GraphQL's flexibility. Reference N+1 query problem in GraphQL and how DataLoader solves it."
+  },
+  {
+    "role": "Software Engineer",
+    "category": "behavioral",
+    "question": "Tell me about a time you had to debug a critical production issue under pressure.",
+    "answer": "Situation: Our e-commerce payment service went down during a peak sales period. Task: I was the on-call engineer responsible for restoring service. Action: I immediately checked logs and identified a database connection pool exhaustion caused by a recent deployment. I rolled back the problematic change, increased the connection pool size as a temporary fix, and coordinated with the team to patch the root cause. Result: Service was restored within 25 minutes, and we implemented better connection pool monitoring to prevent recurrence.",
+    "tips": "Use the STAR method. Emphasize your systematic debugging approach, communication with stakeholders, and post-incident improvements."
+  },
+  {
+    "role": "Data Scientist",
+    "category": "technical",
+    "question": "Explain the bias-variance tradeoff in machine learning.",
+    "answer": "Bias refers to error from incorrect assumptions in the learning algorithm, causing underfitting. Variance refers to error from sensitivity to fluctuations in training data, causing overfitting. A high-bias model (e.g., linear regression on non-linear data) misses relevant patterns. A high-variance model (e.g., deep decision tree) memorizes training data but fails on unseen data. The tradeoff means reducing bias often increases variance and vice versa. The goal is to find the sweet spot — often through cross-validation, regularization (L1/L2), ensemble methods, or appropriate model complexity.",
+    "tips": "Draw the U-shaped total error curve. Mention specific regularization techniques: Ridge, Lasso, Dropout. Connect to practical model selection strategies."
+  },
+  {
+    "role": "Data Scientist",
+    "category": "technical",
+    "question": "How do you handle class imbalance in a classification problem?",
+    "answer": "Class imbalance occurs when one class significantly outnumbers another. Strategies include: (1) Resampling — oversampling the minority class with SMOTE or undersampling the majority class; (2) Class weight adjustment — setting class_weight='balanced' in sklearn models; (3) Threshold tuning — adjusting the decision threshold instead of the default 0.5; (4) Evaluation metrics — using precision, recall, F1-score, AUC-ROC instead of accuracy; (5) Ensemble methods like BalancedRandomForest. The choice depends on the cost of false positives vs. false negatives in the specific domain.",
+    "tips": "Always mention that accuracy is a misleading metric for imbalanced datasets. Discuss domain context — e.g., in fraud detection, false negatives (missed fraud) are more costly than false positives."
+  },
+  {
+    "role": "Product Manager",
+    "category": "behavioral",
+    "question": "How do you prioritize features when you have limited engineering resources?",
+    "answer": "I use a structured prioritization framework. First, I gather input from stakeholders, customers, and analytics to build a comprehensive backlog. Then I apply a scoring model like RICE (Reach, Impact, Confidence, Effort) or the MoSCoW method. I align features with the product's north-star metric and strategic OKRs. I hold regular prioritization reviews with engineering leads to validate effort estimates. I also maintain a 'kill list' — features that are deprioritized and why — to manage expectations transparently.",
+    "tips": "Show that you balance data-driven decisions with stakeholder alignment. Mention how you communicate trade-offs to executives and engineering teams."
+  },
+  {
+    "role": "Product Manager",
+    "category": "technical",
+    "question": "What metrics would you use to measure the success of a new feature launch?",
+    "answer": "Success metrics depend on the feature's goals but typically include: (1) Adoption rate — % of users who use the feature; (2) Engagement — frequency and depth of usage; (3) Retention impact — whether users who use the feature have higher D30/D90 retention; (4) Conversion impact — effect on the primary business conversion metric; (5) NPS and user satisfaction surveys; (6) Error rates and performance SLAs. I always define these metrics before launch in a success criteria document and set a measurement timeline of 30/60/90 days.",
+    "tips": "Mention that you define 'success' before launch, not after. Bring up guardrail metrics — metrics you must NOT worsen, like page load time."
+  },
+  {
+    "role": "DevOps Engineer",
+    "category": "technical",
+    "question": "Explain the concept of Infrastructure as Code (IaC) and its benefits.",
+    "answer": "Infrastructure as Code means managing and provisioning computing infrastructure through machine-readable configuration files rather than manual processes. Tools like Terraform, Pulumi, AWS CloudFormation, and Ansible enable this. Benefits include: (1) Version control — infra changes are tracked in Git; (2) Repeatability — identical environments every time; (3) Automation — CI/CD pipelines can deploy infra changes; (4) Disaster recovery — rebuild infrastructure quickly from code; (5) Collaboration — teams review infra changes via pull requests; (6) Cost management — easier to identify and delete unused resources.",
+    "tips": "Mention the difference between declarative (Terraform) and imperative (Ansible) IaC. Discuss state management in Terraform and remote state backends."
+  },
+  {
+    "role": "general",
+    "category": "hr",
+    "question": "Tell me about yourself.",
+    "answer": "Start with your present role and key responsibilities, then briefly trace your career journey highlighting 2-3 key achievements relevant to this role. End with why you are excited about this specific opportunity. Keep it to 2 minutes. Example: 'I am a Senior Software Engineer with 6 years of experience specializing in distributed systems. In my current role at TechCorp, I led the migration of our monolith to microservices, reducing deployment time by 70%. Before that, I built real-time data pipelines at a fintech startup. I'm excited about this opportunity because your team is solving exactly the kind of scalability challenges I'm passionate about.'",
+    "tips": "Tailor every 'tell me about yourself' to the specific company and role. The answer should flow naturally into why you want this job."
+  },
+  {
+    "role": "general",
+    "category": "hr",
+    "question": "Where do you see yourself in 5 years?",
+    "answer": "Frame your answer around growth in the role you are applying for, not about leaving the company. Show ambition balanced with commitment. Example: 'In 5 years, I see myself growing into a technical lead or staff engineer role, having shipped several high-impact products and mentored junior engineers. I'm particularly excited about deepening my expertise in distributed systems and contributing to architectural decisions. I'd love to do that growth here, as I see a clear path to senior technical roles in your engineering organization.'",
+    "tips": "Avoid saying you want to start your own company or move to a completely different field. Show alignment with the company's growth trajectory."
+  },
+  {
+    "role": "general",
+    "category": "hr",
+    "question": "What is your greatest weakness?",
+    "answer": "Choose a genuine weakness that is not a core requirement of the job, and always pair it with concrete steps you are taking to improve. Example: 'I sometimes spend too long perfecting details before shipping. I've been addressing this by setting explicit timebox limits for tasks and using the 80/20 rule — asking myself if the last 20% of polish is worth the additional time. This has improved my delivery speed while maintaining quality.'",
+    "tips": "Never say 'I work too hard' — interviewers see through this. Pick a real weakness and show self-awareness plus a growth mindset."
+  },
+  {
+    "role": "Frontend Developer",
+    "category": "technical",
+    "question": "Explain the virtual DOM and why React uses it.",
+    "answer": "The virtual DOM is a lightweight in-memory representation of the actual DOM. When state changes, React re-renders the virtual DOM, diffs the new version against the previous one (reconciliation), and applies only the minimal set of real DOM changes. This avoids expensive full DOM re-renders. The diffing algorithm (Fiber) operates in O(n) time using heuristics: same element type means update, different type means re-mount. This makes React highly performant for dynamic UIs by batching DOM updates and minimizing layout reflows.",
+    "tips": "Mention that the virtual DOM is an implementation detail, not a feature. Discuss React 18's concurrent features and automatic batching as further optimizations."
+  },
+  {
+    "role": "Backend Developer",
+    "category": "technical",
+    "question": "What are the SOLID principles and why do they matter?",
+    "answer": "SOLID is an acronym for five OOP design principles: (S) Single Responsibility — a class should have one reason to change; (O) Open/Closed — open for extension, closed for modification; (L) Liskov Substitution — subtypes must be substitutable for their base types; (I) Interface Segregation — clients shouldn't be forced to depend on interfaces they don't use; (D) Dependency Inversion — depend on abstractions, not concretions. These principles lead to more maintainable, testable, and flexible code. Violations are common sources of technical debt and bugs in large codebases.",
+    "tips": "Give a concrete code example for at least one principle — Dependency Inversion is the most powerful to illustrate with a real use case."
+  }
+]
