@@ -1,113 +1,88 @@
 """
-RAG pipeline: document ingestion, chunking, embedding, and retrieval.
-Uses ChromaDB as the local vector store and sentence-transformers for embeddings.
+Lightweight RAG pipeline.
+Uses keyword-based retrieval to reduce RAM consumption.
+No PyTorch, HuggingFace or ChromaDB required.
 """
+
 from __future__ import annotations
 
 import json
 import logging
+import math
+import re
+from collections import Counter
 from pathlib import Path
 from typing import List
 
-import chromadb
-from chromadb.config import Settings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import (
-    DirectoryLoader,
-    PyPDFLoader,
-    TextLoader,
-)
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_core.documents import Document
 
 from app.config import (
     CHUNK_OVERLAP,
     CHUNK_SIZE,
     DOCUMENTS_PATH,
-    EMBEDDING_MODEL,
     RAG_TOP_K,
-    VECTOR_STORE_PATH,
 )
 
 logger = logging.getLogger(__name__)
 
-# ── Embedding model (cached after first load) ─────────────────────────────────
-_embeddings: HuggingFaceEmbeddings | None = None
+# Lightweight in-memory document storage
+_documents: List[Document] = []
 
 
-def get_embeddings() -> HuggingFaceEmbeddings:
-    global _embeddings
-    if _embeddings is None:
-        _embeddings = HuggingFaceEmbeddings(
-            model_name=EMBEDDING_MODEL,
-            model_kwargs={"device": "cpu"},
-            encode_kwargs={"normalize_embeddings": True},
-        )
-    return _embeddings
+def tokenize(text: str) -> List[str]:
+    """Convert text into searchable lowercase tokens."""
+    return re.findall(r"\b[a-zA-Z0-9]+\b", text.lower())
 
-
-# ── Vector store (singleton) ──────────────────────────────────────────────────
-_vector_store: Chroma | None = None
-
-
-def get_vector_store(force_reload: bool = False) -> Chroma:
-    global _vector_store
-    if _vector_store is None or force_reload:
-        _vector_store = Chroma(
-            collection_name="interview_knowledge_base",
-            embedding_function=get_embeddings(),
-            persist_directory=VECTOR_STORE_PATH,
-        )
-    return _vector_store
-
-
-# ── Document ingestion helpers ────────────────────────────────────────────────
 
 def _load_json_interview_data(filepath: Path) -> List[Document]:
-    """Load structured JSON interview Q&A data into Documents."""
-    docs: List[Document] = []
+    """Load structured JSON interview data."""
+
+    docs = []
+
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     if isinstance(data, list):
         for entry in data:
             content_parts = []
-            if "role" in entry:
-                content_parts.append(f"Role: {entry['role']}")
-            if "category" in entry:
-                content_parts.append(f"Category: {entry['category']}")
-            if "question" in entry:
-                content_parts.append(f"Question: {entry['question']}")
-            if "answer" in entry:
-                content_parts.append(f"Model Answer: {entry['answer']}")
-            if "tips" in entry:
-                content_parts.append(f"Tips: {entry['tips']}")
+
+            for key, label in [
+                ("role", "Role"),
+                ("category", "Category"),
+                ("question", "Question"),
+                ("answer", "Model Answer"),
+                ("tips", "Tips"),
+            ]:
+                if key in entry:
+                    content_parts.append(f"{label}: {entry[key]}")
 
             content = "\n".join(content_parts)
+
             if content.strip():
                 docs.append(
                     Document(
                         page_content=content,
                         metadata={
-                            "source": str(filepath),
+                            "source": filepath.name,
                             "role": entry.get("role", "general"),
                             "category": entry.get("category", "general"),
                             "type": "structured_qa",
                         },
                     )
                 )
+
     return docs
 
 
 def ingest_documents(documents_path: str = DOCUMENTS_PATH) -> int:
-    """
-    Ingest all documents from the documents directory into the vector store.
-    Supports: PDF, TXT, JSON interview data files.
-    Returns the number of chunks added.
-    """
+    """Load and chunk documents into lightweight memory storage."""
+
+    global _documents
+
     docs_dir = Path(documents_path)
-    all_docs: List[Document] = []
+    all_docs = []
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
@@ -115,44 +90,70 @@ def ingest_documents(documents_path: str = DOCUMENTS_PATH) -> int:
         separators=["\n\n", "\n", ". ", " ", ""],
     )
 
-    # Load PDFs
+    if not docs_dir.exists():
+        logger.warning("Documents directory not found: %s", docs_dir)
+        _documents = []
+        return 0
+
+    # Load PDF documents
     for pdf_file in docs_dir.glob("**/*.pdf"):
         try:
-            loader = PyPDFLoader(str(pdf_file))
-            pages = loader.load()
+            pages = PyPDFLoader(str(pdf_file)).load()
             chunks = splitter.split_documents(pages)
             all_docs.extend(chunks)
-            logger.info("Loaded PDF: %s (%d chunks)", pdf_file.name, len(chunks))
+
+            logger.info(
+                "Loaded PDF: %s (%d chunks)",
+                pdf_file.name,
+                len(chunks),
+            )
+
         except Exception as e:
             logger.warning("Failed to load PDF %s: %s", pdf_file, e)
 
-    # Load plain text files
+    # Load text documents
     for txt_file in docs_dir.glob("**/*.txt"):
         try:
-            loader = TextLoader(str(txt_file), encoding="utf-8")
-            pages = loader.load()
+            pages = TextLoader(
+                str(txt_file),
+                encoding="utf-8",
+            ).load()
+
             chunks = splitter.split_documents(pages)
             all_docs.extend(chunks)
-            logger.info("Loaded TXT: %s (%d chunks)", txt_file.name, len(chunks))
+
+            logger.info(
+                "Loaded TXT: %s (%d chunks)",
+                txt_file.name,
+                len(chunks),
+            )
+
         except Exception as e:
             logger.warning("Failed to load TXT %s: %s", txt_file, e)
 
-    # Load structured JSON interview data
+    # Load JSON documents
     for json_file in docs_dir.glob("**/*.json"):
         try:
             json_docs = _load_json_interview_data(json_file)
             all_docs.extend(json_docs)
-            logger.info("Loaded JSON: %s (%d entries)", json_file.name, len(json_docs))
+
+            logger.info(
+                "Loaded JSON: %s (%d entries)",
+                json_file.name,
+                len(json_docs),
+            )
+
         except Exception as e:
             logger.warning("Failed to load JSON %s: %s", json_file, e)
 
-    if all_docs:
-        vs = get_vector_store()
-        vs.add_documents(all_docs)
-        vs.persist()
-        logger.info("Ingested %d document chunks into vector store.", len(all_docs))
+    _documents = all_docs
 
-    return len(all_docs)
+    logger.info(
+        "Successfully loaded %d documents into lightweight RAG.",
+        len(_documents),
+    )
+
+    return len(_documents)
 
 
 def retrieve_context(
@@ -161,34 +162,59 @@ def retrieve_context(
     category: str | None = None,
     top_k: int = RAG_TOP_K,
 ) -> List[Document]:
-    """
-    Retrieve the most relevant documents for a query.
-    Optionally filter by role or category metadata.
-    """
-    vs = get_vector_store()
+    """Retrieve relevant documents using keyword matching."""
 
-    where_filter = {}
-    if role:
-        where_filter["role"] = role
-    if category:
-        where_filter["category"] = category
+    if not _documents:
+        return []
 
-    try:
-        if where_filter:
-            results = vs.similarity_search(
-                query, k=top_k, filter=where_filter
-            )
-        else:
-            results = vs.similarity_search(query, k=top_k)
-    except Exception:
-        # Fallback without filter if metadata filtering fails
-        results = vs.similarity_search(query, k=top_k)
+    query_tokens = set(tokenize(query))
 
-    return results
+    if not query_tokens:
+        return []
+
+    scored_docs = []
+
+    for doc in _documents:
+
+        if role and doc.metadata.get("role") != role:
+            continue
+
+        if category and doc.metadata.get("category") != category:
+            continue
+
+        doc_tokens = tokenize(doc.page_content)
+
+        if not doc_tokens:
+            continue
+
+        token_counts = Counter(doc_tokens)
+
+        score = 0.0
+
+        for token in query_tokens:
+            if token in token_counts:
+                score += 1 + math.log1p(token_counts[token])
+
+        if score > 0:
+            scored_docs.append((score, doc))
+
+    scored_docs.sort(
+        key=lambda item: item[0],
+        reverse=True,
+    )
+
+    return [
+        doc
+        for score, doc in scored_docs[:top_k]
+    ]
 
 
 def format_context(docs: List[Document]) -> str:
-    """Concatenate retrieved documents into a single context string."""
+    """Format retrieved documents for the LLM prompt."""
+
     if not docs:
         return "No specific context available from the knowledge base."
-    return "\n\n---\n\n".join(doc.page_content for doc in docs)
+
+    return "\n\n---\n\n".join(
+        doc.page_content for doc in docs
+    )
